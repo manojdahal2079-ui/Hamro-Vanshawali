@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>डिजिटल वंश-वृक्ष (Interactive Vanshavali)</title>
+  <style>
+    :root {
+      --primary: #800000;
+      --gold: #D4AF37;
+      --bg: #FFFDF9;
+      --card-bg: #FFFFFF;
+      --border: #E2D1A6;
+      --text: #2C221E;
+      --accent: #1B4D3E;
+      --fb-color: #1877F2;
+    }
+
+    body {
+      font-family: 'Mukta', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    header {
+      background: linear-gradient(135deg, #1A1A1A, #000000);
+      color: white;
+      padding: 20px;
+      border-radius: 12px;
+      border-bottom: 5px solid var(--gold);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      margin-bottom: 25px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+    }
+
+    .header-title {
+      flex: 1;
+      min-width: 280px;
+    }
+
+    .header-title h1 {
+      margin: 0;
+      font-size: 2rem;
+      color: #FFF;
+      letter-spacing: 1px;
+    }
+
+    .header-title p {
+      margin: 5px 0 0;
+      color: var(--gold);
+      font-size: 1.05rem;
+    }
+
+    .presenter-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(255,255,255,0.08);
+      padding: 10px 15px;
+      border-radius: 10px;
+      border: 1px solid var(--gold);
+    }
+
+    .presenter-logo {
+      height: 55px;
+      width: auto;
+      object-fit: contain;
+      border-radius: 4px;
+    }
+
+    .presenter-info {
+      text-align: left;
+    }
+
+    .presenter-info span {
+      display: block;
+      font-size: 0.8rem;
+      color: #CCC;
+    }
+
+    .presenter-info strong {
+      font-size: 1.1rem;
+      color: var(--gold);
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .search-box {
+      flex: 1;
+      min-width: 250px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 10px 15px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      font-size: 1rem;
+      box-sizing: border-box;
+    }
+
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    button {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.95rem;
+    }
+
+    button:hover {
+      background-color: #A00000;
+      transform: translateY(-2px);
+    }
+
+    button.btn-add { background-color: var(--accent); }
+    button.btn-add:hover { background-color: #256652; }
+
+    button.btn-fb { background-color: var(--fb-color); }
+    button.btn-fb:hover { background-color: #145DBF; }
+
+    /* Modal Form */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 500px;
+      border-top: 6px solid var(--gold);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    .modal-content h3 { margin-top: 0; color: var(--primary); }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+    .form-group input, .form-group select {
+      width: 100%; padding: 8px 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;
+    }
+    .modal-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+
+    /* Tree View Styling */
+    .tree-section {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    ul.tree, ul.tree ul {
+      list-style-type: none;
+      padding-left: 20px;
+      margin: 0;
+    }
+
+    ul.tree li {
+      margin: 10px 0;
+      position: relative;
+    }
+
+    .node-card {
+      display: inline-flex;
+      align-items: center;
+      background: #FFF9E6;
+      border: 1px solid var(--gold);
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s;
+      gap: 10px;
+      position: relative;
+    }
+
+    .node-card:hover {
+      background: #FFE8A3;
+      transform: scale(1.01);
+    }
+
+    .node-card .toggle-icon {
+      font-weight: bold;
+      color: var(--primary);
+      width: 18px;
+      text-align: center;
+    }
+
+    .node-card .name { font-weight: bold; color: var(--primary); font-size: 1.05rem; }
+    .node-card .badge { background: var(--primary); color: white; font-size: 0.75rem; padding: 2px 6px; border-radius: 12px; }
+    .node-card .location { font-size: 0.85rem; color: #555; font-style: italic; }
+
+    /* Card embedded Logo */
+    .card-presenter-logo {
+      height: 24px;
+      width: auto;
+      margin-left: 8px;
+      opacity: 0.85;
+      vertical-align: middle;
+      border-left: 1px solid #D4AF37;
+      padding-left: 8px;
+    }
+
+    .children { display: none; }
+    .children.open { display: block; }
+
+    .linear-chain {
+      background: #FDF4E3;
+      border: 1px solid var(--border);
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+
+    .linear-chain h3 { margin-top: 0; color: var(--primary); }
+    .chain-flow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 0.95rem; }
+    .chain-item { background: white; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--gold); }
+    .chain-arrow { color: var(--primary); font-weight: bold; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div class="header-title">
+      <h1>🚩 हाम्रो डिजिटल वंश-वृक्ष 🚩</h1>
+      <p>नाममा थिचेर पछिल्लो पुस्ताका विवरणहरू हेर्नुहोस्</p>
+    </div>
+    
+    <!-- प्रस्तुतकर्ता सेक्सन -->
+    <div class="presenter-box">
+      <img src="https://i.ibb.co/6R21hYf/manoj-dahal-logo.png" alt="Manoj Dahal Logo" class="presenter-logo" id="mainPresenterLogo">
+      <div class="presenter-info">
+        <span>प्रस्तुतकर्ता:</span>
+        <strong>Manoj Dahal</strong>
+      </div>
+    </div>
+  </header>
+
+  <!-- १ देखि ११ औं पुस्ता -->
+  <div class="linear-chain">
+    <h3>🏛️ मुख्य मूल-पुस्ता (१ देखि ११ औं पुस्ता)</h3>
+    <div class="chain-flow">
+      <span class="chain-item">१. दासु भट्ट (दुल्लु)</span> <span class="chain-arrow">➔</span>
+      <span class="chain-item">२. शिवराम (दहगाउँ)</span> <span class="chain-arrow">➔</span>
+      <span class="chain-item">३. वासुदेव (दाङ)</span> <span class="chain-arrow">➔</span>
+      <span class="chain-item">४. वेणुमाधव (दाङ)</span> <span class="chain-arrow">➔</span>
+      <span class="chain-item">५. तुलाराम (झिल्टुङ)</span> <span class="chain-arrow">➔</span>
+      <span class="chain-item">६. गुरु लोकनाथ (दोलखा)</span> <span class="chain-arrow">➔</span>
+      <span class="chain-item">७. जयभद्र (ओखलढुङ्गा)</span> <span class="chain-arrow">➔</span>
+      <span class="chain-item">८. कृष्णानन्द (ज्यामिरे)</span> <span class="chain-arrow">➔</span>
+      <span class="chain-item">९. कल्याण (खोक्सेली)</span> <span class="chain-arrow">➔</span>
+      <span class="chain-item">१०. गृहपति (खोक्सेली)</span> <span class="chain-arrow">➔</span>
+      <span class="chain-item">११. वासुदेव (खोक्सेली)</span>
+    </div>
+  </div>
+
+  <!-- नियन्त्रण तथा शेयर बटनहरू -->
+  <div class="controls">
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="🔍 नाम वा ठेगाना खोज्नुहोस्..." onkeyup="searchNodes()">
+    </div>
+    <div class="btn-group">
+      <button onclick="toggleAll(true)">📖 सबै खोल्नुहोस्</button>
+      <button onclick="toggleAll(false)">📕 सबै बन्द गर्नुहोस्</button>
+      <button class="btn-add" onclick="openModal()">➕ नयाँ विवरण थप्नुहोस्</button>
+      <button class="btn-fb" onclick="shareOnFacebook()">📘 फेसबुकमा शेयर गर्नुहोस्</button>
+      <button onclick="downloadData()">💾 डेटा सेभ गर्नुहोस्</button>
+    </div>
+  </div>
+
+  <!-- वंश-वृक्ष खण्ड -->
+  <div class="tree-section">
+    <ul class="tree" id="treeRoot"></ul>
+  </div>
+</div>
+
+<!-- Modal Form -->
+<div class="modal" id="addModal">
+  <div class="modal-content">
+    <h3>➕ नयाँ सन्तानको विवरण प्रविष्ट गर्नुहोस्</h3>
+    <form id="personForm" onsubmit="savePerson(event)">
+      <div class="form-group">
+        <label>बाबु/अभिभावकको नाम छान्नुहोस्:</label>
+        <select id="parentSelect" required></select>
+      </div>
+      <div class="form-group">
+        <label>सन्तानको नाम:</label>
+        <input type="text" id="personName" required placeholder="उदाहरण: रामप्रसाद">
+      </div>
+      <div class="form-group">
+        <label>पुस्ता (Generation):</label>
+        <input type="number" id="personGen" placeholder="उदाहरण: १८">
+      </div>
+      <div class="form-group">
+        <label>स्थान / ठेगाना / कैफियत:</label>
+        <input type="text" id="personLoc" placeholder="उदाहरण: इनरुवा, सुनसरी (जेठा)">
+      </div>
+      <div class="modal-buttons">
+        <button type="button" style="background:#ccc; color:#000;" onclick="closeModal()">रद्द गर्नुहोस्</button>
+        <button type="submit">सेभ गर्नुहोस्</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+const logoUrl = "https://i.ibb.co/6R21hYf/manoj-dahal-logo.png";
+
+// वंशावली डेटा संरचना
+const vanshavaliData = [
+  {
+    id: "12_1", name: "जयपति", gen: "१२ औं (जेठा)", loc: "बुला",
+    children: [
+      {
+        id: "13_1", name: "द्विपनारान", gen: "१३ औं", loc: "वाणिविलास",
+        children: [
+          {
+            id: "14_1", name: "कमलापति", gen: "१४ औं (जेठा)", loc: "बुलाबाट काभ्रे",
+            children: [
+              {
+                id: "15_1", name: "कर्णखर", gen: "१५ औं", loc: "",
+                children: [
+                  {
+                    id: "16_1", name: "रामप्रसाद (मोहनीप्रसाद)", gen: "१६ औं (जेठा)", loc: "",
+                    children: [
+                      {
+                        id: "17_1", name: "केशवप्रसाद", gen: "१७ औं", loc: "इनरुवा",
+                        children: [
+                          { id: "18_1", name: "विष्णु", gen: "१८ औं", loc: "" },
+                          { id: "18_2", name: "मनोज", gen: "१८ औं", loc: "" }
+                        ]
+                      },
+                      { id: "17_2", name: "छविनाथ", gen: "१७ औं", loc: "अविवाहित स्व." },
+                      {
+                        id: "17_3", name: "सीताराम", gen: "१७ औं", loc: "इटहरी",
+                        children: [
+                          { id: "18_3", name: "दिवाकर", gen: "१८ औं", loc: "" },
+                          { id: "18_4", name: "मधुकर", gen: "१८ औं", loc: "", children: [{ id: "19_1", name: "कौस्तुभ", gen: "१९ औं", loc: "" }] },
+                          { id: "18_5", name: "शङ्कर", gen: "१८ औं", loc: "" },
+                          { id: "18_6", name: "कुमार", gen: "१८ औं", loc: "" }
+                        ]
+                      },
+                      {
+                        id: "17_4", name: "सोमनाथ", gen: "१७ औं", loc: "शिवागञ्ज",
+                        children: [
+                          { id: "18_7", name: "पुरुषोत्तम", gen: "१८ औं", loc: "", children: [{ id: "19_2", name: "प्रीयन्स", gen: "१९ औं", loc: "" }] }
+                        ]
+                      },
+                      { id: "17_5", name: "कृष्णप्रसाद", gen: "१७ औं", loc: "अविवाहित स्व." }
+                    ]
+                  },
+                  { id: "16_2", name: "जयप्रसाद", gen: "१६ औं (माहिला)", loc: "अविवाहित स्व." },
+                  {
+                    id: "16_3", name: "धर्मनाथ", gen: "१६ औं (साहिँला)", loc: "गरामनि, झापा",
+                    children: [
+                      { id: "17_6", name: "दीपक", gen: "१७ औं", loc: "बिर्तामोड" },
+                      { id: "17_7", name: "सुरेन्द्र", gen: "१७ औं", loc: "गारामनी" }
+                    ]
+                  },
+                  {
+                    id: "16_4", name: "नरनाथ / विष्णुप्रसाद", gen: "१६ औं (काहिंला)", loc: "मधेश, सुनसरी",
+                    children: [
+                      { id: "17_8", name: "दिनेश", gen: "१७ औं", loc: "", children: [{ id: "18_8", name: "दिवस", gen: "१८ औं", loc: "" }] },
+                      { id: "17_9", name: "महेश", gen: "१७ औं", loc: "" },
+                      { id: "17_10", name: "उमेश", gen: "१७ औं", loc: "", children: [{ id: "18_9", name: "श्रीयन", gen: "१८ औं", loc: "" }] }
+                    ]
+                  },
+                  { id: "16_5", name: "कूलप्रसाद", gen: "१६ औं", loc: "अविवाहित स्व." },
+                  { id: "16_6", name: "षडानन्द", gen: "१६ औं", loc: "स्व.", children: [{ id: "17_11", name: "छोरा (अज्ञात)", gen: "१७ औं", loc: "" }] }
+                ]
+              }
+            ]
+          },
+          {
+            id: "14_2", name: "श्यामलाल", gen: "१४ औं (माइला)", loc: "बुलाबाट काभ्रे",
+            children: [
+              {
+                id: "15_2", name: "बेहेरीलाल", gen: "१५ औं", loc: "",
+                children: [
+                  {
+                    id: "16_7", name: "नन्दलाल", gen: "१६ औं (जेठा)", loc: "",
+                    children: [
+                      { id: "17_12", name: "रामप्रसाद", gen: "१७ औं", loc: "", children: [{ id: "18_10", name: "प्रकाश", gen: "१८ औं", loc: "" }] },
+                      { id: "17_13", name: "लक्ष्मण", gen: "१७ औं", loc: "" },
+                      { id: "17_14", name: "रेवती (रिठ्ठे)", gen: "१७ औं", loc: "" }
+                    ]
+                  },
+                  {
+                    id: "16_8", name: "पुष्पलाल", gen: "१६ औं (कान्छा)", loc: "",
+                    children: [
+                      {
+                        id: "17_15", name: "रूपनारायण", gen: "१७ औं", loc: "टंकी",
+                        children: [
+                          { id: "18_11", name: "प्रकाश", gen: "१८ औं", loc: "", children: [{ id: "19_3", name: "उमेश", gen: "१९ औं", loc: "" }, { id: "19_4", name: "प्रज्ज्वल", gen: "१९ औं", loc: "" }] },
+                          { id: "18_12", name: "अर्जुन", gen: "१८ औं", loc: "", children: [{ id: "19_5", name: "पीयूष", gen: "१९ औं", loc: "" }] }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            id: "14_3", name: "मुक्तिनाथ", gen: "१४ औं (साइँला)", loc: "बुला",
+            children: [
+              {
+                id: "15_3", name: "श्रीलाल", gen: "१५ औं (जेठा)", loc: "",
+                children: [
+                  { id: "16_9", name: "छविलाल", gen: "१६ औं", loc: "", children: [{ id: "17_16", name: "विष्णुप्रसाद", gen: "१७ औं", loc: "" }, { id: "17_17", name: "टिकादत्त", gen: "१७ औं", loc: "" }, { id: "17_18", name: "तुलसीप्रसाद", gen: "१७ औं", loc: "" }] }
+                ]
+              },
+              {
+                id: "15_4", name: "काशीनाथ", gen: "१५ औं (माइला)", loc: "",
+                children: [
+                  { id: "16_10", name: "मनोरथ", gen: "१६ औं", loc: "", children: [{ id: "17_19", name: "टिकाप्रसाद", gen: "१७ औं", loc: "" }, { id: "17_20", name: "तुलसीप्रसाद", gen: "१७ औं", loc: "" }, { id: "17_21", name: "भवानीप्रसाद", gen: "१७ औं", loc: "" }, { id: "17_22", name: "दाताराम", gen: "१७ औं", loc: "" }, { id: "17_23", name: "लिलानाथ", gen: "१७ औं", loc: "आँपघरे" }] },
+                  { id: "16_11", name: "चिन्तामणि", gen: "१६ औं", loc: "", children: [{ id: "17_24", name: "बद्रीप्रसाद", gen: "१७ औं", loc: "" }, { id: "17_25", name: "केदारप्रसाद", gen: "१७ औं", loc: "" }] }
+                ]
+              },
+              {
+                id: "15_5", name: "बैजनाथ", gen: "१५ औं (कान्छा)", loc: "",
+                children: [
+                  { id: "16_12", name: "लक्ष्मीप्रसाद", gen: "१६ औं", loc: "भलायाडाँडा", children: [{ id: "17_26", name: "मुकुन्द", gen: "१७ औं", loc: "", children: [{ id: "18_13", name: "दीनानाथ", gen: "१८ औं", loc: "" }, { id: "18_14", name: "कृष्णप्रसाद", gen: "१८ औं", loc: "" }] }] }
+                ]
+              }
+            ]
+          },
+          {
+            id: "14_4", name: "शिवनिधि", gen: "१४ औं (कान्छा)", loc: "बुला",
+            children: [
+              {
+                id: "15_6", name: "गोकुलनाथ", gen: "१५ औं", loc: "",
+                children: [
+                  { id: "16_13", name: "नरनाथ", gen: "१६ औं", loc: "", children: [{ id: "17_27", name: "टंकनाथ", gen: "१७ औं", loc: "उर्लाबारी", children: [{ id: "18_15", name: "प्रदिप", gen: "१८ औं", loc: "" }, { id: "18_16", name: "दिपक", gen: "१८ औं", loc: "" }] }] },
+                  { id: "16_14", name: "दक्षनाथ", gen: "१६ औं", loc: "", children: [{ id: "17_28", name: "विष्णुप्रसाद", gen: "१७ औं (जेठा)", loc: "" }, { id: "17_29", name: "लक्ष्मीप्रसाद", gen: "१७ औं (माइला)", loc: "" }, { id: "17_30", name: "डिल्लीप्रसाद", gen: "१७ औं (कान्छा)", loc: "" }] }
+                ]
+              },
+              {
+                id: "15_7", name: "रघुनाथ (यदुप्रसाद)", gen: "१५ औं", loc: "",
+                children: [
+                  { id: "16_15", name: "धान्यनाथ", gen: "१६ औं", loc: "" }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      { id: "12_2", name: "मनहरि", gen: "१२ औं (माइला)", loc: "बुला" },
+      { id: "12_3", name: "हरिपाध्या", gen: "१२ औं (कान्छा)", loc: "काभ्रे" }
+    ]
+  }
+];
+
+// Tree Rendering
+function renderTree(nodes, container) {
+  container.innerHTML = "";
+  nodes.forEach(node => {
+    const li = document.createElement("li");
+    const hasChildren = node.children && node.children.length > 0;
+    
+    let html = `
+      <div class="node-card" onclick="toggleNode(this)">
+        <span class="toggle-icon">${hasChildren ? "▶" : "•"}</span>
+        <span class="name">${node.name}</span>
+        ${node.gen ? `<span class="badge">${node.gen}</span>` : ""}
+        ${node.loc ? `<span class="location">📍 ${node.loc}</span>` : ""}
+        <img src="${logoUrl}" alt="Manoj Dahal Logo" class="card-presenter-logo" title="प्रस्तुतकर्ता: Manoj Dahal">
+      </div>
+    `;
+
+    if (hasChildren) {
+      html += `<ul class="children"></ul>`;
+    }
+
+    li.innerHTML = html;
+    container.appendChild(li);
+
+    if (hasChildren) {
+      renderTree(node.children, li.querySelector(".children"));
+    }
+  });
+}
+
+function toggleNode(cardElement) {
+  const childrenUl = cardElement.nextElementSibling;
+  const icon = cardElement.querySelector(".toggle-icon");
+  if (childrenUl) {
+    if (childrenUl.classList.contains("open")) {
+      childrenUl.classList.remove("open");
+      icon.textContent = "▶";
+    } else {
+      childrenUl.classList.add("open");
+      icon.textContent = "▼";
+    }
+  }
+}
+
+function toggleAll(open) {
+  const allChildren = document.querySelectorAll("ul.children");
+  const allIcons = document.querySelectorAll(".toggle-icon");
+  
+  allChildren.forEach(ul => {
+    if (open) ul.classList.add("open");
+    else ul.classList.remove("open");
+  });
+
+  allIcons.forEach(icon => {
+    if (icon.textContent !== "•") {
+      icon.textContent = open ? "▼" : "▶";
+    }
+  });
+}
+
+// Modal Functions
+function openModal() {
+  populateParentsSelect();
+  document.getElementById("addModal").style.display = "flex";
+}
+
+function closeModal() {
+  document.getElementById("addModal").style.display = "none";
+  document.getElementById("personForm").reset();
+}
+
+function populateParentsSelect() {
+  const select = document.getElementById("parentSelect");
+  select.innerHTML = "";
+  
+  function extractNames(nodes) {
+    nodes.forEach(node => {
+      const opt = document.createElement("option");
+      opt.value = node.id;
+      opt.textContent = `${node.name} (${node.gen || 'अज्ञात'})`;
+      select.appendChild(opt);
+      if (node.children) extractNames(node.children);
+    });
+  }
+  
+  extractNames(vanshavaliData);
+}
+
+function savePerson(e) {
+  e.preventDefault();
+  const parentId = document.getElementById("parentSelect").value;
+  const name = document.getElementById("personName").value;
+  const gen = document.getElementById("personGen").value ? document.getElementById("personGen").value + " औं" : "";
+  const loc = document.getElementById("personLoc").value;
+
+  const newPerson = {
+    id: "new_" + Date.now(),
+    name: name,
+    gen: gen,
+    loc: loc
+  };
+
+  function addChild(nodes) {
+    for (let node of nodes) {
+      if (node.id === parentId) {
+        if (!node.children) node.children = [];
+        node.children.push(newPerson);
+        return true;
+      }
+      if (node.children && addChild(node.children)) return true;
+    }
+    return false;
+  }
+
+  addChild(vanshavaliData);
+  renderTree(vanshavaliData, document.getElementById("treeRoot"));
+  closeModal();
+  alert("नयाँ विवरण सफलतापूर्वक थपियो!");
+}
+
+function searchNodes() {
+  const filter = document.getElementById("searchInput").value.toLowerCase();
+  const cards = document.querySelectorAll(".node-card");
+
+  cards.forEach(card => {
+    const text = card.textContent.toLowerCase();
+    if (filter && text.includes(filter)) {
+      card.style.border = "2px solid red";
+      let parentUl = card.closest("ul.children");
+      while (parentUl) {
+        parentUl.classList.add("open");
+        if (parentUl.previousElementSibling) {
+          const icon = parentUl.previousElementSibling.querySelector(".toggle-icon");
+          if (icon) icon.textContent = "▼";
+        }
+        parentUl = parentUl.parentElement.closest("ul.children");
+      }
+    } else {
+      card.style.border = "1px solid var(--gold)";
+    }
+  });
+}
+
+// Share on Facebook Function
+function shareOnFacebook() {
+  const shareUrl = encodeURIComponent(window.location.href);
+  const fbShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`;
+  window.open(fbShareUrl, '_blank', 'width=600,height=400');
+}
+
+// Download JSON Data
+function downloadData() {
+  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(vanshavaliData, null, 2));
+  const downloadAnchor = document.createElement('a');
+  downloadAnchor.setAttribute("href", dataStr);
+  downloadAnchor.setAttribute("download", "vanshavali_data.json");
+  document.body.appendChild(downloadAnchor);
+  downloadAnchor.click();
+  downloadAnchor.remove();
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  renderTree(vanshavaliData, document.getElementById("treeRoot"));
+});
+</script>
+</body>
+</html>
